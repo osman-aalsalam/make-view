@@ -98,10 +98,8 @@ class makeView extends Command
 
     private function add_extends_blade_command($options) {
         foreach($options['extends'] as $master){
-            $masterPath = '';
-            if(strpos($master,'.') != null) {
-                $masterPath = str_replace('.', '/' ,$master);
-            }
+            $masterPath = $this->changePath($master);
+            
             if(file_exists($this->viewPath.$masterPath.".blade.php")){
                 fprintf($this->file,"@extends('%s')\n",$master);  
             }else {
@@ -111,8 +109,40 @@ class makeView extends Command
     }
 
     private function add_section_blade_command($options) {
-        foreach($options['section'] as $section) {
-            fprintf($this->file,"@section('%s')\n\n<!-- The Content of the section ".$section." goes here. -->\n\n@endsection\n\n",$section);
+        $sections = Array();
+        foreach($options['extends'] as $extend) {
+            if(file_exists($this->viewPath.$this->changePath($extend).".blade.php")) {
+                //$layoutFile = fopen($this->viewPath.$this->changePath($extend).".blade.php",'r');
+                foreach($options['section'] as $section) {
+                    if($this->fsearch($this->viewPath.$this->changePath($extend).".blade.php",'@yield(\''.$section.'\')')) {
+                        fprintf($this->file,"@section('%s')\n\n<!-- The Content of the section ".$section." goes here. -->\n\n@endsection\n\n",$section);
+                        $sections[$section] = true;
+                    }else $sections[$section] = false;
+                }
+            }
         }
+
+        foreach($sections as $key=>$value) {
+            if(!$value) {
+                fprintf($this->file,"\n<!-- was trying to add @section blade command -- @section('%s') -- but the section doesn't appears in extended layout files. -->\n",$key);
+            }
+        }
+    }
+
+    private function changePath($path) {
+        $modifiedPath = '';
+        if(strpos($path,'.') != null) {
+            $modifiedPath = str_replace('.', '/' ,$path);
+        }else $modifiedPath = $path;
+        return $modifiedPath;
+    }
+    private function fsearch($filePath,$keyword) {
+        $contents = file_get_contents($filePath);
+        $searchfor = $keyword;
+        $pattern = preg_quote($searchfor, '/');
+        $pattern = "/^.*$pattern.*\$/m";
+        if(preg_match_all($pattern, $contents, $matches)){
+           return true;
+        }else return false;
     }
 }
