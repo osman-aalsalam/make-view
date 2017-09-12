@@ -19,11 +19,11 @@ make view is a laravel artisan command to make new view.
 
   make:view is a laravel artisan command to make a new view the command accept the path as argument where the view must be located in and other options related to view it self.
   
-    * path: is view path location path.
+    ** path: is view path location path. **
     
     ** Options **
     
-      * ** extends **
+       ** extends **
       
       ```
       --extends=layouts.app
@@ -37,7 +37,7 @@ make view is a laravel artisan command to make new view.
         
         in this case the view1 view will be created when the command execute and the view will extends from app1 and app2 at the same time.
         
-      * ** section **
+       ** section **
       
       ```
       --section=sectionName
